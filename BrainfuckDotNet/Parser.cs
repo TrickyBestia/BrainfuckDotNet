@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 
 namespace BrainfuckDotNet
 {
@@ -9,6 +10,9 @@ namespace BrainfuckDotNet
     {
         private static readonly MethodInfo _consoleWrite = typeof(Console).GetMethod("Write", new Type[] { typeof(char) });
         private static readonly MethodInfo _consoleRead = typeof(Console).GetMethod("Read", new Type[0]);
+        private static readonly MethodInfo _encodingGet_ASCII = typeof(Encoding).GetMethod("get_ASCII");
+        private static readonly MethodInfo _consoleSetOutputEncoding = typeof(Console).GetMethod("set_OutputEncoding");
+        private static readonly MethodInfo _consoleSetInputEncoding = typeof(Console).GetMethod("set_InputEncoding");
 
         public static void Parse(IEnumerable<Token> tokens, ILGenerator ilGenerator)
         {
@@ -24,6 +28,11 @@ namespace BrainfuckDotNet
 
             ilGenerator.Emit(OpCodes.Ldc_I4_0);
             ilGenerator.Emit(OpCodes.Stloc_1);
+
+            ilGenerator.Emit(OpCodes.Call, _encodingGet_ASCII);
+            ilGenerator.Emit(OpCodes.Call, _consoleSetOutputEncoding);
+            ilGenerator.Emit(OpCodes.Call, _encodingGet_ASCII);
+            ilGenerator.Emit(OpCodes.Call, _consoleSetInputEncoding);
 
             foreach (var token in tokens)
             {
